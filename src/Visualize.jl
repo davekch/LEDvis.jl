@@ -10,7 +10,11 @@ using Crayons
 function asciivisualize(colormap)
     for row in eachrow(colormap)
         for r in row
-            print(Crayon(background=r), "  ")
+            if ismissing(r)
+                print(Crayon(reset=true), "  ")
+            else
+                print(Crayon(background=r), "  ")
+            end
         end
         println(Crayon(reset=true))
     end
