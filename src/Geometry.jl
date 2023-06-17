@@ -1,3 +1,6 @@
+"""
+module for basic shapes and 2D geometry
+"""
 module Geometry
 
 
