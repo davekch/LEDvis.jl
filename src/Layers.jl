@@ -1,7 +1,7 @@
 module Layers
 
 
-export Color, Mask, hex, normalize, createmask, Layer, evaluate, monochromatic
+export Color, Mask, hex, normalize, createmask, Layer, evaluate, monochromatic, shapes
 
 using ..Geometry
 
@@ -49,12 +49,13 @@ end
 
 
 struct Layer
-    shapes::Vector{Shape}
+    shapes::Dict{Shape,Function}
     color::Matrix{Color}
 end
 
 width(layer::Layer) = size(layer.color, 2)
 height(layer::Layer) = size(layer.color, 1)
+shapes(layer::Layer) = layer.shapes
 
 function evaluate(layers::Vector{Layer})  # todo: give better name
     # represent a layer as a simple matrix
@@ -63,7 +64,7 @@ function evaluate(layers::Vector{Layer})  # todo: give better name
     cmap = copy(background)
     for layer in layers
         mask = falses(h, w)
-        for shape in layer.shapes
+        for shape in keys(layer.shapes)
             mask .|= createmask(shape, w, h)
         end
         cmap += ifelse.(mask, layer.color, background)

@@ -1,7 +1,7 @@
 module Geometry
 
 
-export Vec2D, +, Shape, anker, Circle, distance2, radius
+export Vec2D, +, Shape, anker, Circle, distance2, radius, setanker!, setradius!
 
 
 struct Vec2D{T<:Number}
@@ -17,6 +17,10 @@ end
 
 function Base.:-(v1::Vec2D, v2::Vec2D)
     Vec2D(v1.x - v2.x, v1.y - v2.y)
+end
+
+function Base.:*(f::Number, v::Vec2D)
+    Vec2D(v.x * f, v.y * f)
 end
 
 function distance2(v1::Vec2D, v2::Vec2D)
@@ -39,6 +43,8 @@ Circle(r, x, y) = Circle(r, Vec2D(x, y))
 
 radius(c::Circle) = c.radius
 anker(c::Circle) = c.anker
+setradius!(c::Circle, r) = (c.radius = r)
+setanker!(c::Circle, anker) = (c.anker = anker)
 
 
 end # module geometry
