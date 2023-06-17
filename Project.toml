@@ -1,0 +1,7 @@
+name = "Ledvis"
+uuid = "cc29aa6e-8000-4610-85b1-c03136a42052"
+authors = ["davekch <dave-koch@web.de>"]
+version = "0.1.0"
+
+[deps]
+Crayons = "a8cc5b0e-0ffa-5ad4-8c14-923d3ee1735f"
