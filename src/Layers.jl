@@ -2,6 +2,7 @@ module Layers
 
 
 export Color, Layer, evaluate, monochromatic, shapes
+export field, colorfield, Fields
 
 using ..Geometry
 import LinearAlgebra: ⋅
@@ -65,6 +66,44 @@ function createmask(rect::Rect, w::Integer, h::Integer)
     end
     mask
 end
+
+
+"""
+    field(f, w::Integer, h::Integer)
+
+apply `f([i, j])` to every element with indices `j, i` in a h×w matrix
+"""
+function field(f, w::Integer, h::Integer)
+    A = Array{Any}(undef, h, w)
+    for j = 1:h, i = 1:w
+        A[j, i] = f([i, j])
+    end
+    A
+end
+
+colorfield(red, green, blue) = map(normalize ∘ Color, red, green, blue)
+
+"""
+contains handy functions to define color fields
+"""
+module Fields
+using ..Geometry
+
+"""
+    expfield(a::Number, t::Number)
+
+returns the function `f(p = [x, y]) = a * exp(-t * (x^2 + y^2))`
+"""
+expfield(a, t) = p -> a * exp(-t * (x(p)^2 + y(p)^2))
+
+"""
+    absexpfield(a::Number, t::Number)
+
+returns the function `f(p = [x, y]) = a * exp(-t * (|x| + |y|))`
+"""
+absexpfield(a, t) = p -> a * exp(-t * (abs(x(p)) + abs(y(p))))
+
+end #module fields
 
 
 struct Layer
