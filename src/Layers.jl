@@ -72,6 +72,10 @@ struct Layer
     color::Matrix{Color}
 end
 
+function Layer(shapes::Vector, color::Matrix{Color})
+    Layer(Dict([s => identity for s in shapes]), color)
+end
+
 width(layer::Layer) = size(layer.color, 2)
 height(layer::Layer) = size(layer.color, 1)
 shapes(layer::Layer) = layer.shapes
