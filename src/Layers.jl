@@ -50,7 +50,7 @@ function createmask(circle::Circle, w::Integer, h::Integer)
     # pixelate the shape on a w x h matrix
     mask = falses(h, w)
     for i = 1:w, j = 1:h
-        mask[j, i] = distance2(Vec2D(i, j), anker(circle)) <= radius(circle)^2
+        mask[j, i] = distance2([i, j], anker(circle)) <= radius(circle)^2
     end
     mask
 end

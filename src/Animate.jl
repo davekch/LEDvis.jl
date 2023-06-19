@@ -24,7 +24,7 @@ moves a shape linearly in direction `(dx, dy)`
 function linearmove(dx, dy; factor=1, edgesx=missing, edgesy=missing)
     # save the anker for later
     p0 = undef
-    v = Vec2D(dx, dy)
+    v = [dx, dy]
     function _linearmove!(shape::Shape)
         # if this is the first time calling, save the anker of the shape
         if p0 == undef
@@ -33,9 +33,9 @@ function linearmove(dx, dy; factor=1, edgesx=missing, edgesy=missing)
         newanker = anker(shape) + factor * v
         # check if the anker moved out of bounds; if it did, reset to initial anker
         if (
-            (!ismissing(edgesx) && (newanker.x < edgesx[1] || newanker.x > edgesx[2]))
+            (!ismissing(edgesx) && (x(newanker) < edgesx[1] || x(newanker) > edgesx[2]))
             ||
-            (!ismissing(edgesy) && (newanker.y < edgesy[1] || newanker.y > edgesy[2]))
+            (!ismissing(edgesy) && (y(newanker) < edgesy[1] || y(newanker) > edgesy[2]))
         )
             newanker = p0
         end

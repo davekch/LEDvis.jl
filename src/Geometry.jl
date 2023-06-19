@@ -1,37 +1,16 @@
 module Geometry
 
 
-export Vec2D, +, -, Shape, Circle, Rect, distance2
+export x, y, Shape, Circle, Rect, distance2
 export anker, setanker!, radius, setradius!
 export width, setwidth!, height, setheight!, angle, setangle!, edges
 
 import LinearAlgebra: inv
 
+x(v::Vector) = v[1]
+y(v::Vector) = v[2]
 
-struct Vec2D{T<:Number}
-    x::T
-    y::T
-end
-
-# Vector(v::Vec2D) = [v.x, v.y]
-
-function Base.:+(v1::Vec2D, v2::Vec2D)
-    Vec2D(v1.x + v2.x, v1.y + v2.y)
-end
-
-function Base.:-(v1::Vec2D, v2::Vec2D)
-    Vec2D(v1.x - v2.x, v1.y - v2.y)
-end
-
-function Base.:*(f::Number, v::Vec2D)
-    Vec2D(v.x * f, v.y * f)
-end
-
-function distance2(v1::Vec2D, v2::Vec2D)
-    v1 = [v1.x, v1.y]
-    v2 = [v2.x, v2.y]
-    sum((v1 - v2) .^ 2)
-end
+distance2(v1::Vector, v2::Vector) = sum((v1 - v2) .^ 2)
 
 """
     rotate(point, angle)
@@ -66,24 +45,24 @@ rotate(a::Number, origin::Vector) = point -> rotate(point, a, origin)
 
 abstract type Shape end
 
-anker(s::Shape) = Vec2D(0, 0)
+anker(s::Shape) = [0, 0]
 
 """
-    Circle(radius, anker::Vec2D)
+    Circle(radius, anker::Vector)
 """
 mutable struct Circle <: Shape
     radius::Number
-    anker::Vec2D
+    anker::Vector
 end
 
 """
     *(radius)
 """
-Circle(r) = Circle(r, Vec2D(0, 0))
+Circle(r) = Circle(r, [0, 0])
 """
     *(radius, x, y)
 """
-Circle(r, x, y) = Circle(r, Vec2D(x, y))
+Circle(r, x, y) = Circle(r, [x, y])
 
 radius(c::Circle) = c.radius
 anker(c::Circle) = c.anker
@@ -91,19 +70,20 @@ setradius!(c::Circle, r) = (c.radius = r)
 setanker!(c::Circle, anker) = (c.anker = anker)
 
 """
-    Rect(angle, width, height, anker::Vec2D)
+    Rect(angle, width, height, anker::Vector)
 """
 mutable struct Rect <: Shape
     angle::Number
     width::Number
     height::Number
-    anker::Vec2D
+    anker::Vector
 end
 
 """
     *(width, height, x, y)
 """
-Rect(w::Number, h::Number, x::Number, y::Number) = Rect(0, w, h, Vec2D(x, y))
+Rect(w::Number, h::Number, x::Number, y::Number) = Rect(0, w, h, [x, y])
+Rect(w::Number, h::Number, p::Vector) = Rect(0, w, h, p)
 
 anker(r::Rect) = r.anker
 setanker!(r::Rect, anker) = (r.anker = anker)
@@ -120,7 +100,7 @@ setheight!(r::Rect, h) = (r.height = h)
 get the points of the edges of `rect`
 """
 function edges(rect::Rect)
-    a = [anker(rect).x, anker(rect).y]
+    a = anker(rect)
     w2 = width(rect) / 2
     h2 = height(rect) / 2
     # angle = 0
