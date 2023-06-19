@@ -86,9 +86,13 @@ function evaluate(layers::Vector{Layer})  # todo: give better name
     background = [Color(0, 0, 0) for j in 1:h, i in 1:w]
     cmap = copy(background)
     for layer in layers
-        mask = falses(h, w)
-        for shape in keys(layer.shapes)
-            mask .|= createmask(shape, w, h)
+        if isempty(layer.shapes)
+            mask = trues(h, w)
+        else
+            mask = falses(h, w)
+            for shape in keys(layer.shapes)
+                mask .|= createmask(shape, w, h)
+            end
         end
         cmap += ifelse.(mask, layer.color, background)
     end
