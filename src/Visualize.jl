@@ -8,16 +8,18 @@ using Crayons
 
 
 function asciivisualize(colormap)
+    io = IOBuffer()
     for row in eachrow(colormap)
         for r in row
             if ismissing(r)
-                print(Crayon(reset=true), "  ")
+                write(io, "$(Crayon(reset=true))  ")
             else
-                print(Crayon(background=r), "  ")
+                write(io, "$(Crayon(background=r))  ")
             end
         end
-        println(Crayon(reset=true))
+        write(io, "$(Crayon(reset=true))\n")
     end
+    println(String(take!(io)))
 end
 
 
