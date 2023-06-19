@@ -22,13 +22,13 @@ function Base.:+(c1::Color, c2::Color)
 end
 
 function normalize(color::Color)
-    # restrict all values to [0..255]; i don't want to don
+    # restrict all values to [0..255]; i don't want to do
     # this in the type itself because masks with negative colors
     # can be used as shadows
     Color(
-        max(min(color.r, 255), 0),
-        max(min(color.g, 255), 0),
-        max(min(color.b, 255), 0),
+        round(Integer, max(min(color.r, 255), 0)),
+        round(Integer, max(min(color.g, 255), 0)),
+        round(Integer, max(min(color.b, 255), 0)),
     )
 end
 
