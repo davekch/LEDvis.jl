@@ -1,9 +1,11 @@
 module Layers
 
 
-export Color, Mask, hex, normalize, createmask, Layer, evaluate, monochromatic
+export Color, Layer, evaluate, monochromatic, shapes
+export field, colorfield, Fields
 
 using ..Geometry
+import LinearAlgebra: ⋅
 
 struct Color
     r
@@ -21,13 +23,13 @@ function Base.:+(c1::Color, c2::Color)
 end
 
 function normalize(color::Color)
-    # restrict all values to [0..255]; i don't want to don
+    # restrict all values to [0..255]; i don't want to do
     # this in the type itself because masks with negative colors
     # can be used as shadows
     Color(
-        max(min(color.r, 255), 0),
-        max(min(color.g, 255), 0),
-        max(min(color.b, 255), 0),
+        round(Integer, max(min(color.r, 255), 0)),
+        round(Integer, max(min(color.g, 255), 0)),
+        round(Integer, max(min(color.b, 255), 0)),
     )
 end
 
@@ -38,23 +40,84 @@ function monochromatic(color::Color, w::Integer, h::Integer)
     [color for j in 1:h, i in 1:w]
 end
 
+"""
+    createmask(shape::Shape, width, height)
+
+create a width x height Matrix{Bool} that is true where shape sits
+"""
+function createmask(shape::Shape, w::Integer, h::Integer) end
+
 function createmask(circle::Circle, w::Integer, h::Integer)
     # pixelate the shape on a w x h matrix
     mask = falses(h, w)
     for i = 1:w, j = 1:h
-        mask[j, i] = distance2(Vec2D(i, j), anker(circle)) <= radius(circle)^2
+        mask[j, i] = distance2([i, j], anker(circle)) <= radius(circle)^2
+    end
+    mask
+end
+
+function createmask(rect::Rect, w::Integer, h::Integer)
+    mask = falses(h, w)
+    A, B, C, D = edges(rect)
+    # taken from here: https://math.stackexchange.com/questions/190111/how-to-check-if-a-point-is-inside-a-rectangle
+    for i = 1:w, j = 1:h
+        M = [i, j]
+        mask[j, i] = (0 < (A - M) ⋅ (A - B) < (A - B) ⋅ (A - B)) & (0 < (A - M) ⋅ (A - D) < (A - D) ⋅ (A - D))
     end
     mask
 end
 
 
+"""
+    field(f, w::Integer, h::Integer)
+
+apply `f([i, j])` to every element with indices `j, i` in a h×w matrix
+"""
+function field(f, w::Integer, h::Integer)
+    A = Array{Any}(undef, h, w)
+    for j = 1:h, i = 1:w
+        A[j, i] = f([i, j])
+    end
+    A
+end
+
+colorfield(red, green, blue) = map(normalize ∘ Color, red, green, blue)
+
+"""
+contains handy functions to define color fields
+"""
+module Fields
+using ..Geometry
+
+"""
+    expfield(a::Number, t::Number)
+
+returns the function `f(p = [x, y]) = a * exp(-t * (x^2 + y^2))`
+"""
+expfield(a, t) = p -> a * exp(-t * (x(p)^2 + y(p)^2))
+
+"""
+    absexpfield(a::Number, t::Number)
+
+returns the function `f(p = [x, y]) = a * exp(-t * (|x| + |y|))`
+"""
+absexpfield(a, t) = p -> a * exp(-t * (abs(x(p)) + abs(y(p))))
+
+end #module fields
+
+
 struct Layer
-    shapes::Vector{Shape}
+    shapes::Dict{Shape,Function}
     color::Matrix{Color}
+end
+
+function Layer(shapes::Vector, color::Matrix{Color})
+    Layer(Dict([s => identity for s in shapes]), color)
 end
 
 width(layer::Layer) = size(layer.color, 2)
 height(layer::Layer) = size(layer.color, 1)
+shapes(layer::Layer) = layer.shapes
 
 function evaluate(layers::Vector{Layer})  # todo: give better name
     # represent a layer as a simple matrix
@@ -62,9 +125,13 @@ function evaluate(layers::Vector{Layer})  # todo: give better name
     background = [Color(0, 0, 0) for j in 1:h, i in 1:w]
     cmap = copy(background)
     for layer in layers
-        mask = falses(h, w)
-        for shape in layer.shapes
-            mask .|= createmask(shape, w, h)
+        if isempty(layer.shapes)
+            mask = trues(h, w)
+        else
+            mask = falses(h, w)
+            for shape in keys(layer.shapes)
+                mask .|= createmask(shape, w, h)
+            end
         end
         cmap += ifelse.(mask, layer.color, background)
     end
