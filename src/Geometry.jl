@@ -68,13 +68,21 @@ abstract type Shape end
 
 anker(s::Shape) = Vec2D(0, 0)
 
-
+"""
+    Circle(radius, anker::Vec2D)
+"""
 mutable struct Circle <: Shape
     radius::Number
     anker::Vec2D
 end
 
+"""
+    *(radius)
+"""
 Circle(r) = Circle(r, Vec2D(0, 0))
+"""
+    *(radius, x, y)
+"""
 Circle(r, x, y) = Circle(r, Vec2D(x, y))
 
 radius(c::Circle) = c.radius
