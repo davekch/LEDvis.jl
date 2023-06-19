@@ -1,6 +1,6 @@
 module Animate
 
-export animate!, linearmove, growcircle
+export animate!, linearmove, growcircle, rotate
 using ..Geometry
 using ..Layers
 
@@ -55,6 +55,9 @@ function growcircle(dr, minr, maxr)
     end
     _growcirle!
 end
+
+
+rotate(dphi) = rect::Rect -> setangle!(rect, Geometry.angle(rect) + dphi)
 
 
 end # module Animate

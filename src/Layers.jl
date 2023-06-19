@@ -1,9 +1,10 @@
 module Layers
 
 
-export Color, Mask, hex, normalize, createmask, Layer, evaluate, monochromatic, shapes
+export Color, Layer, evaluate, monochromatic, shapes
 
 using ..Geometry
+import LinearAlgebra: ⋅
 
 struct Color
     r
@@ -38,11 +39,29 @@ function monochromatic(color::Color, w::Integer, h::Integer)
     [color for j in 1:h, i in 1:w]
 end
 
+"""
+    createmask(shape::Shape, width, height)
+
+create a width x height Matrix{Bool} that is true where shape sits
+"""
+function createmask(shape::Shape, w::Integer, h::Integer) end
+
 function createmask(circle::Circle, w::Integer, h::Integer)
     # pixelate the shape on a w x h matrix
     mask = falses(h, w)
     for i = 1:w, j = 1:h
         mask[j, i] = distance2(Vec2D(i, j), anker(circle)) <= radius(circle)^2
+    end
+    mask
+end
+
+function createmask(rect::Rect, w::Integer, h::Integer)
+    mask = falses(h, w)
+    A, B, C, D = edges(rect)
+    # taken from here: https://math.stackexchange.com/questions/190111/how-to-check-if-a-point-is-inside-a-rectangle
+    for i = 1:w, j = 1:h
+        M = [i, j]
+        mask[j, i] = (0 < (A - M) ⋅ (A - B) < (A - B) ⋅ (A - B)) & (0 < (A - M) ⋅ (A - D) < (A - D) ⋅ (A - D))
     end
     mask
 end
