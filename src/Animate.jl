@@ -5,6 +5,42 @@ using ..Geometry
 using ..Layers
 
 
+struct BPM
+    value::Integer
+end
+
+struct Animator
+    framerate::Integer  # per second
+    tempo::BPM
+    layers::Vector{Layer}
+end
+
+mutable struct Flag
+    value::Bool
+end
+
+isset(f::Flag) = f.value
+toggle!(f::Flag) = (f.value = !f.value)
+
+
+function runanimation(animator::Animator, run::Flag)
+    # how much time must pass for each frame
+    t_frame = 1.0 / animator.framerate
+    while isset(run)
+        t = @elapsed begin
+            animate!(animator.layers)
+            # send to serial / visualize
+            @info "running ..."
+        end
+        if t > t_frame
+            @warn "can't keep up with framerate"
+            continue
+        end
+        sleep(t_frame - t)
+    end
+end
+
+
 function animate!(layer::Layer)
     for (shape, animation) in shapes(layer)
         animation(shape)
