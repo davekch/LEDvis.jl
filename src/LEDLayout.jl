@@ -1,6 +1,6 @@
 module LEDLayout
 
-export Layout, withlayout, width, height
+export Layout, withlayout, width, height, indices
 using ..Layers
 import JSON
 
@@ -30,6 +30,7 @@ end
 
 width(layout::Layout) = layout.width
 height(layout::Layout) = layout.height
+indices(layout::Layout) = layout.indices
 
 function withlayout(image, layout::Layout)
     ifelse.(layout.matrix, image, missing)

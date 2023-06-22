@@ -1,6 +1,6 @@
 module Ledvis
 
-export Geometry, Layers, Animate, Visualize, LEDLayout
+export Geometry, Layers, Animate, Visualize, LEDLayout, Serial
 export W, H, MX, MY, purple, green, shadow, bkgpurple, bkggreen, bkgshadow, layout, center
 
 include("Geometry.jl")
@@ -8,6 +8,7 @@ include("Layers.jl")
 include("Animate.jl")
 include("Visualize.jl")
 include("LEDLayout.jl")
+include("Serial.jl")
 
 using .Layers, .LEDLayout
 
