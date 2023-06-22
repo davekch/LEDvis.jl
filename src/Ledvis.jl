@@ -12,7 +12,7 @@ include("LEDLayout.jl")
 using .Layers, .LEDLayout
 
 # convenience
-const layout = LEDLayout.fromfile("resources/layout_medium.txt")
+const layout = LEDLayout.fromfile("resources/layout.json")
 const W = width(layout)
 const H = height(layout)
 # middle points

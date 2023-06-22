@@ -2,21 +2,34 @@ module LEDLayout
 
 export Layout, withlayout, width, height
 using ..Layers
+import JSON
 
 
 """
-    Layout(matrix::Matrix{Bool})
+    Layout(width::Integer, height::Integer, indices::Vector{Tuple})
 
 describes the layout of a LED strip
 """
 struct Layout
+    width::Integer
+    height::Integer
+    indices::Vector{Tuple}
     matrix::Matrix{Bool}
-    # should in the future also contain instructions how to serialize
-    # this; ie in what order the pixels come
+    # make an inner constructor with `matrix` missing; it is generated based on 
+    # the other parameters and should not be provided by the user
+    # the reason it's a member is to avoid having to recompute it often
+    function Layout(width::Integer, height::Integer, indices::Vector)
+        m = falses(height, width)
+        for ji in indices
+            m[ji...] = true
+        end
+        new(width, height, indices, m)
+    end
 end
 
-width(layout::Layout) = size(layout.matrix, 2)
-height(layout::Layout) = size(layout.matrix, 1)
+
+width(layout::Layout) = layout.width
+height(layout::Layout) = layout.height
 
 function withlayout(image, layout::Layout)
     ifelse.(layout.matrix, image, missing)
@@ -27,23 +40,12 @@ end
     fromfile(filepath)
 
 read a LEDLayout.Layout from a file.
-expects a Matrix{Bool} in text format.
+expects a json containing all arguments for `Layer`.
 """
 function fromfile(filepath)
-    f = open(filepath, "r") do io
-        read(io, String)
-    end
-    # split lines and remove all whitespace
-    f = map(filter(!isspace), split(f, '\n'))
-    height = length(f)
-    width = length(f[1])
-    layout = falses(height, width)
-    for (j, line) in enumerate(f)
-        for (i, c) in enumerate(line)
-            layout[j, i] = c == '1'
-        end
-    end
-    Layout(layout)
+    config = open(JSON.parse, filepath)
+    idxs = [tuple(i...) for i in config["indices"]]
+    Layout(config["width"], config["height"], idxs)
 end
 
 
