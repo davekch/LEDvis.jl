@@ -1,43 +1,69 @@
 module Animate
 
-export animate!, linearmove, growcircle, rotate, pulsate
+export animate!, linearmove, growcircle, rotate, pulsate, metronome, Event, TICK, START, STOP
+import Dates
 using ..Geometry
 using ..Layers
 
 
-struct BPM
-    value::Integer
-end
-
-struct Animator
-    framerate::Integer  # per second
-    tempo::BPM
-    layers::Vector{Layer}
-end
-
-mutable struct Flag
-    value::Bool
-end
-
-isset(f::Flag) = f.value
-toggle!(f::Flag) = (f.value = !f.value)
+@enum Event TICK START STOP
 
 
-function runanimation(animator::Animator, run::Flag)
-    # how much time must pass for each frame
-    t_frame = 1.0 / animator.framerate
-    while isset(run)
-        t = @elapsed begin
-            animate!(animator.layers)
-            # send to serial / visualize
-            @info "running ..."
+"""
+    metronome(bpm::Integer, resolution::Integer=1)
+
+returns `(ticks::Channel{Event}, signals::Channel{Event})`.
+calling this function starts a seperate thread that waits for a `START`
+event to be put in the `signals` channel. Once it receives it, it puts
+`TICK` events in the `ticks` channel `bpm * resolution` times per minute
+(±1ms uncertainty)
+"""
+function metronome(bpm::Integer, resolution::Integer=1)
+    # how much time in seconds must pass for each frame
+    t_frame = 60 // (bpm * resolution)
+    send = Channel{Event}(Inf)
+    receive = Channel{Event}(1)
+
+    Threads.@spawn begin
+        @info "thread spawned, waiting to start metronome"
+        # wait until we get a start signal
+        # note that this is not a busy loop because take is blocking
+        while take!(receive) != START
         end
-        if t > t_frame
-            @warn "can't keep up with framerate"
-            continue
+        @info "starting metronome"
+        while true
+            t = @elapsed begin
+                if !isempty(send)
+                    @warn "can't keep up with framerate"
+                end
+                put!(send, TICK)
+                if !isempty(receive)
+                    s = take!(receive)
+                    if s == STOP
+                        @info "stopping metronome..."
+                        break
+                    end
+                end
+            end
+            sleep(max(t_frame - t, 0))
         end
-        sleep(t_frame - t)
     end
+    (send, receive)
+end
+
+
+function clockedanimate(ticks::Channel{Event}, signals::Channel{Event})
+    put!(signals, START)
+    tocks = ["BOOM", "2", "3", "4"]
+    ts = []
+    # for testing purposes, let it run just 100 ticks
+    for i = 0:99
+        _ = take!(ticks)
+        push!(ts, Dates.now())
+        println(tocks[i%4+1])
+    end
+    put!(signals, STOP)
+    diff(ts)
 end
 
 
