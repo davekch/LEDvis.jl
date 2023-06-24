@@ -1,8 +1,70 @@
 module Animate
 
-export animate!, linearmove, growcircle, rotate, pulsate
+export animate!, linearmove, growcircle, rotate, pulsate, metronome, Event, TICK, START, STOP
+import Dates
 using ..Geometry
 using ..Layers
+
+
+@enum Event TICK START STOP
+
+
+"""
+    metronome(bpm::Integer, resolution::Integer=1)
+
+returns `(ticks::Channel{Event}, signals::Channel{Event})`.
+calling this function starts a seperate thread that waits for a `START`
+event to be put in the `signals` channel. Once it receives it, it puts
+`TICK` events in the `ticks` channel `bpm * resolution` times per minute
+(±1ms uncertainty)
+"""
+function metronome(bpm::Integer, resolution::Integer=1)
+    # how much time in seconds must pass for each frame
+    t_frame = 60 // (bpm * resolution)
+    send = Channel{Event}(Inf)
+    receive = Channel{Event}(1)
+
+    Threads.@spawn begin
+        @info "thread spawned, waiting to start metronome"
+        # wait until we get a start signal
+        # note that this is not a busy loop because take is blocking
+        while take!(receive) != START
+        end
+        @info "starting metronome"
+        while true
+            t = @elapsed begin
+                if !isempty(send)
+                    @warn "can't keep up with framerate"
+                end
+                put!(send, TICK)
+                if !isempty(receive)
+                    s = take!(receive)
+                    if s == STOP
+                        @info "stopping metronome..."
+                        break
+                    end
+                end
+            end
+            sleep(max(t_frame - t, 0))
+        end
+    end
+    (send, receive)
+end
+
+
+function clockedanimate(ticks::Channel{Event}, signals::Channel{Event})
+    put!(signals, START)
+    tocks = ["BOOM", "2", "3", "4"]
+    ts = []
+    # for testing purposes, let it run just 100 ticks
+    for i = 0:99
+        _ = take!(ticks)
+        push!(ts, Dates.now())
+        println(tocks[i%4+1])
+    end
+    put!(signals, STOP)
+    diff(ts)
+end
 
 
 function animate!(layer::Layer)
