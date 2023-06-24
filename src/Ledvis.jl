@@ -10,7 +10,9 @@ include("Visualize.jl")
 include("LEDLayout.jl")
 include("Serial.jl")
 
-using .Layers, .LEDLayout
+using .Layers, .LEDLayout, .Animate, .Serial
+using LibSerialPort
+using Sockets
 
 # convenience
 const layout = LEDLayout.fromfile("resources/layout.json")
@@ -26,6 +28,26 @@ const shadow = Color(-255, -255, -255)
 const bkgpurple = monochromatic(purple, W, H)
 const bkggreen = monochromatic(green, W, H)
 const bkgshadow = monochromatic(shadow, W, H)
+
+
+function run(layers::Vector{Layer}, ticks::Channel{Event}, signals::Channel{Event})
+    # open all the communication channels
+    # serial port
+    # ser = LibSerialPort.open(device, kwargs...)
+    # set_flow_control(ser)
+    # sp_flush(ser, SP_BUF_BOTH)
+    server = listen(2002)
+    socket = accept(server)
+    while true
+        animate!(layers)
+        serialized = serialize(evaluate(layers), layout)
+        # blocks until next tick
+        @info "waiting for tick..."
+        _ = take!(ticks)
+        @info "ticked!"
+        println(socket, serialized)
+    end
+end
 
 
 end # module ledvis
