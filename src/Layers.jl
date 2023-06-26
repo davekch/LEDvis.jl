@@ -22,6 +22,10 @@ function Base.:+(c1::Color, c2::Color)
     Color(c1.r + c2.r, c1.g + c2.g, c1.b + c2.b)
 end
 
+function Base.:*(f::Number, c::Color)
+    Color(f * c.r, f * c.g, f * c.b)
+end
+
 function normalize(color::Color)
     # restrict all values to [0..255]; i don't want to do
     # this in the type itself because masks with negative colors
@@ -43,30 +47,45 @@ end
 """
     createmask(shape::Shape, width, height)
 
-create a width x height Matrix{Bool} that is true where shape sits
+create a width x height Matrix{Float64} that is `1.0` where shape sits
 """
 function createmask(shape::Shape, w::Integer, h::Integer) end
 
 function createmask(circle::Circle, w::Integer, h::Integer)
     # pixelate the shape on a w x h matrix
-    mask = falses(h, w)
+    mask = zeros(h, w)
     for i = 1:w, j = 1:h
-        mask[j, i] = distance2([i, j], anker(circle)) <= radius(circle)^2
+        mask[j, i] = distance2([i, j], anker(circle)) <= radius(circle)^2 ? 1.0 : 0.0
     end
     mask
 end
 
 function createmask(rect::Rect, w::Integer, h::Integer)
-    mask = falses(h, w)
+    mask = zeros(h, w)
     A, B, C, D = edges(rect)
     # taken from here: https://math.stackexchange.com/questions/190111/how-to-check-if-a-point-is-inside-a-rectangle
     for i = 1:w, j = 1:h
         M = [i, j]
-        mask[j, i] = (0 < (A - M) ⋅ (A - B) < (A - B) ⋅ (A - B)) & (0 < (A - M) ⋅ (A - D) < (A - D) ⋅ (A - D))
+        inside = (0 < (A - M) ⋅ (A - B) < (A - B) ⋅ (A - B)) & (0 < (A - M) ⋅ (A - D) < (A - D) ⋅ (A - D))
+        mask[j, i] = inside ? 1.0 : 0.0
     end
     mask
 end
 
+function createmask(glow::Glow, w::Integer, h::Integer)
+    mask = createmask(glow.inner, w, h)
+    for j = 1:h, i = 1:w
+        if mask[j, i] > 0
+            continue
+        else
+            # find the distance to nearest point of a shape (where it's 1.0)
+            shapeindices = map(Tuple, findall(mask .== 1.0))
+            d = minimum([distance2([j, i], [l, k]) for (l, k) in shapeindices])
+            mask[j, i] = exp(- d / glow.t)
+        end
+    end
+    mask
+end
 
 """
     field(f, w::Integer, h::Integer)
@@ -122,21 +141,23 @@ shapes(layer::Layer) = layer.shapes
 function evaluate(layers::Vector{Layer})  # todo: give better name
     # represent a layer as a simple matrix
     h, w = height(layers[1]), width(layers[1])  # todo: check if all layers have the same dimension
-    background = [Color(0, 0, 0) for j in 1:h, i in 1:w]
-    cmap = copy(background)
+    cmap = [Color(0, 0, 0) for j in 1:h, i in 1:w]
     for layer in layers
         if isempty(layer.shapes)
-            mask = trues(h, w)
+            mask = ones(h, w)
         else
-            mask = falses(h, w)
+            mask = zeros(h, w)
             for shape in keys(layer.shapes)
-                mask .|= createmask(shape, w, h)
+                # add all the masks together, making sure they don't get
+                # larger than 1
+                mask .+= min.(createmask(shape, w, h), ones(h, w))
             end
         end
-        cmap += ifelse.(mask, layer.color, background)
+        cmap += mask .* layer.color
     end
     return map(rgb ∘ normalize, cmap)
 end
 
 
 end # module Layer
+

@@ -1,7 +1,7 @@
 module Geometry
 
 
-export x, y, Shape, Circle, Rect, distance2
+export x, y, Shape, Circle, Rect, Glow, distance2
 export anker, setanker!, radius, setradius!
 export width, setwidth!, height, setheight!, angle, setangle!, edges
 
@@ -111,4 +111,11 @@ function edges(rect::Rect)
     map(rotate(angle(rect), a), [p1, p2, p3, p4])
 end
 
+
+mutable struct Glow <: Shape
+    inner::Shape
+    t::Number
+end
+
 end # module geometry
+
