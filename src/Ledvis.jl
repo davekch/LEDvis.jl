@@ -4,10 +4,10 @@ export Geometry, Layers, Animate, Visualize, LEDLayout, Serial
 export W, H, MX, MY, purple, green, shadow, bkgpurple, bkggreen, bkgshadow, layout, center
 
 include("Geometry.jl")
+include("LEDLayout.jl")
 include("Layers.jl")
 include("Animate.jl")
 include("Visualize.jl")
-include("LEDLayout.jl")
 include("Serial.jl")
 
 using .Layers, .LEDLayout, .Animate, .Serial
@@ -40,7 +40,7 @@ function run(layers::Vector{Layer}, ticks::Channel{Event}, signals::Channel{Even
     socket = accept(server)
     while true
         animate!(layers)
-        serialized = serialize(evaluate(layers), layout)
+        serialized = serialize(render(layers), layout)
         # blocks until next tick
         @info "waiting for tick..."
         _ = take!(ticks)

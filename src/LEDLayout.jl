@@ -1,7 +1,6 @@
 module LEDLayout
 
 export Layout, withlayout, width, height, indices
-using ..Layers
 import JSON
 
 
@@ -41,7 +40,7 @@ end
     fromfile(filepath)
 
 read a LEDLayout.Layout from a file.
-expects a json containing all arguments for `Layer`.
+expects a json containing all arguments for `Layout`.
 """
 function fromfile(filepath)
     config = open(JSON.parse, filepath)

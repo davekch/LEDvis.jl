@@ -11,10 +11,7 @@ pulse = pulsate(
 for _ in 1:100
     cmap = pulse()
     asciivisualize(
-        withlayout(
-            evaluate([Layer([], cmap)]),
-            layout
-        )
+        render([Layer([], cmap)], layout),
     )
     println()
     sleep(0.05)

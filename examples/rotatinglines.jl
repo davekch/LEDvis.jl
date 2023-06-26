@@ -19,12 +19,7 @@ layers = [
 
 try
     while true
-        asciivisualize(
-            withlayout(
-                evaluate(layers),
-                layout
-            )
-        )
+        asciivisualize(render(layers, layout))
         println()
         sleep(0.05)
         animate!(layers)

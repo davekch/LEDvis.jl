@@ -10,12 +10,7 @@ layers = [
 
 for _ in 1:50
     animate!(layers)
-    asciivisualize(
-        withlayout(
-            evaluate(layers),
-            layout
-        )
-    )
+    asciivisualize(render(layers, layout))
     println()
     sleep(0.1)
 end
