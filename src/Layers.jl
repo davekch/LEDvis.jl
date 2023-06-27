@@ -25,6 +25,7 @@ function Base.:+(c1::Color, c2::Color)
 end
 
 Base.:+(::Color, ::Missing) = missing
+Base.:+(::Missing, ::Color) = missing
 
 function Base.:*(f::Number, c::Color)
     Color(f * c.r, f * c.g, f * c.b)
@@ -59,9 +60,9 @@ create a Matrix{Float64} matching the size of `layout` that is `1.0` where shape
 if `full` is `false` (the default), only the pixels relevant to the layout are computed,
 the rest is `missing`. If `full` is `true`, the entire image is computed
 """
-function createmask(shape::Shape, layout::Layout, full=false) end
+function createmask(shape::Shape, layout::Layout; full=false) end
 
-function createmask(circle::Circle, layout::Layout, full=false)
+function createmask(circle::Circle, layout::Layout; full=false)
     # pixelate the shape on a w x h matrix
     w = layout.width
     h = layout.height
@@ -77,7 +78,7 @@ function createmask(circle::Circle, layout::Layout, full=false)
     mask
 end
 
-function createmask(rect::Rect, layout::Layout, full=false)
+function createmask(rect::Rect, layout::Layout; full=false)
     w = layout.width
     h = layout.height
     mask = Array{Any}(missing, h, w)
@@ -96,8 +97,11 @@ function createmask(rect::Rect, layout::Layout, full=false)
     mask
 end
 
-function createmask(glow::Glow, layout::Layout, full=false)
-    mask = createmask(glow.inner, layout, full)
+function createmask(glow::Glow, layout::Layout; full=true)
+    # calculate the full mask, we want to know where the shape is no matter
+    # the layout; the glow could leak into the layout even if the shape itself
+    # may not be visible
+    mask = createmask(glow.inner, layout; full=true)
     w = layout.width
     h = layout.height
     if full
@@ -110,10 +114,11 @@ function createmask(glow::Glow, layout::Layout, full=false)
             continue
         else
             # find the distance to nearest point of a shape (where it's 1.0)
-            # shapeindices = map(Tuple, findall(mask .== 1.0))
-            shapeindices = [(l, k) for (l, k) in idxs if mask[l, k] == 1.0]
-            d = minimum([distance2([j, i], [l, k]) for (l, k) in shapeindices])
-            mask[j, i] = exp(-d / glow.t)
+            shapeindices = map(Tuple, findall(mask .== 1.0))
+            if !isempty(shapeindices)
+                d = minimum([distance2([j, i], [l, k]) for (l, k) in shapeindices])
+                mask[j, i] = exp(-d / glow.t)
+            end
         end
     end
     mask
@@ -170,10 +175,17 @@ width(layer::Layer) = size(layer.color, 2)
 height(layer::Layer) = size(layer.color, 1)
 shapes(layer::Layer) = layer.shapes
 
-function render(layers::Vector{Layer}, layout::Layout, full=false)
+function render(layers::Vector{Layer}, layout::Layout; full=false)
     # represent a layer as a simple matrix
     h, w = layout.height, layout.width # todo: check if all layers have the same dimension
-    cmap = [Color(0, 0, 0) for j in 1:h, i in 1:w]
+    if full
+        cmap = [Color(0, 0, 0) for j in 1:h, i in 1:w]
+    else
+        cmap = Array{Any}(missing, h, w)
+        for (j, i) in indices(layout)
+            cmap[j, i] = Color(0, 0, 0)
+        end
+    end
     for layer in layers
         if isempty(layer.shapes)
             mask = ones(h, w)
@@ -182,7 +194,7 @@ function render(layers::Vector{Layer}, layout::Layout, full=false)
             for shape in keys(layer.shapes)
                 # add all the masks together, making sure they don't get
                 # larger than 1
-                mask .+= min.(createmask(shape, layout, full), ones(h, w))
+                mask .+= min.(createmask(shape, layout, full=full), ones(h, w))
             end
         end
         cmap += mask .* layer.color
