@@ -29,14 +29,15 @@ const bkggreen = monochromatic(green, W, H)
 const bkgshadow = monochromatic(shadow, W, H)
 
 
-function run(layers::Vector{Layer}, ticks::Channel{Event}, signals::Channel{Event}, ios; showterminal=false)
-    while true
+function run(layers::Vector{Layer}, clock::Clock, ios; showterminal=false)
+    start!(clock)
+    while running(clock)
         animate!(layers)
         rendered = render(layers, layout)
         serialized = serialize(rendered, layout)
         # blocks until next tick
         @debug "waiting for tick..."
-        _ = take!(ticks)
+        awaittick(clock)
         @debug "ticked!"
         if showterminal
             asciivisualize(rendered)
@@ -46,6 +47,10 @@ function run(layers::Vector{Layer}, ticks::Channel{Event}, signals::Channel{Even
             write(io, serialized)
         end
     end
+end
+
+function run(layers::Vector{Layer}, clock::Clock)
+    run(layers, clock, []; showterminal=true)
 end
 
 
