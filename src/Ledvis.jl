@@ -12,7 +12,6 @@ include("Serial.jl")
 
 using .Layers, .LEDLayout, .Animate, .Serial
 using LibSerialPort
-using Sockets
 
 # convenience
 const layout = LEDLayout.fromfile("resources/layout.json")
@@ -30,22 +29,17 @@ const bkggreen = monochromatic(green, W, H)
 const bkgshadow = monochromatic(shadow, W, H)
 
 
-function run(layers::Vector{Layer}, ticks::Channel{Event}, signals::Channel{Event})
-    # open all the communication channels
-    # serial port
-    # ser = LibSerialPort.open(device, kwargs...)
-    # set_flow_control(ser)
-    # sp_flush(ser, SP_BUF_BOTH)
-    server = listen(2002)
-    socket = accept(server)
+function run(layers::Vector{Layer}, ticks::Channel{Event}, signals::Channel{Event}, ios)
     while true
         animate!(layers)
-        serialized = serialize(render(layers), layout)
+        serialized = serialize(render(layers, layout), layout)
         # blocks until next tick
-        @info "waiting for tick..."
+        @debug "waiting for tick..."
         _ = take!(ticks)
-        @info "ticked!"
-        println(socket, serialized)
+        @debug "ticked!"
+        for io in ios
+            write(io, serialized)
+        end
     end
 end
 
