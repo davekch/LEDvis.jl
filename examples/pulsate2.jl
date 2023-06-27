@@ -10,4 +10,4 @@ layers = [
     Layer(Dict(Glow(circle, 1) => glow -> glow.t = g()), bkgpurple)
 ]
 
-ticks, signals = metronome(80, 8)
+clock = Clock(80, 8)

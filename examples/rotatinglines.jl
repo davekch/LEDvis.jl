@@ -17,4 +17,4 @@ layers = [
     Layer(Dict(l6 => rotate(-dphi)), bkggreen)
 ]
 
-ticks, signals = metronome(110, 16)
+clock = Clock(110, 16)

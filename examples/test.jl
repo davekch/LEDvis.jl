@@ -33,7 +33,4 @@ for p in ports
     end
 end
 
-
-t = Threads.@spawn Ledvis.run(layers, ticks, signals, ios; showterminal=showterminal)
-put!(signals, START)
-wait(t)
+Ledvis.run(layers, clock, ios; showterminal=showterminal)

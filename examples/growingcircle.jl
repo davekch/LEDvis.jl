@@ -8,4 +8,4 @@ layers = [
     Layer(Dict(c1 => grow), bkgpurple)
 ]
 
-ticks, signals = metronome(120, 8)
+clock = Clock(120, 8)
