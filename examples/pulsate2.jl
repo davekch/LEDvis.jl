@@ -10,15 +10,4 @@ layers = [
     Layer(Dict(Glow(circle, 1) => glow -> glow.t = g()), bkgpurple)
 ]
 
-serial = LibSerialPort.open("/dev/ttyACM0", 115200)
-
-t = @elapsed for _ = 1:600
-    animate!(layers)
-    rendered = render(layers, layout)
-    write(serial, serialize(rendered, layout))
-    asciivisualize(rendered)
-    println()
-    sleep(0.05)
-end
-
-println("$(t/600)s per loop")
+ticks, signals = metronome(80, 8)

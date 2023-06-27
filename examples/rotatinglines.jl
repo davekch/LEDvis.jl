@@ -17,15 +17,4 @@ layers = [
     Layer(Dict(l6 => rotate(-dphi)), bkggreen)
 ]
 
-try
-    while true
-        asciivisualize(render(layers, layout))
-        println()
-        sleep(0.05)
-        animate!(layers)
-    end
-catch e
-    if !isa(e, InterruptException)
-        throw(e)
-    end
-end
+ticks, signals = metronome(110, 16)
