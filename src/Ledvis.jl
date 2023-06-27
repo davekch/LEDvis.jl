@@ -10,7 +10,7 @@ include("Animate.jl")
 include("Visualize.jl")
 include("Serial.jl")
 
-using .Layers, .LEDLayout, .Animate, .Serial
+using .Layers, .LEDLayout, .Animate, .Serial, .Visualize
 using LibSerialPort
 
 # convenience
@@ -29,14 +29,19 @@ const bkggreen = monochromatic(green, W, H)
 const bkgshadow = monochromatic(shadow, W, H)
 
 
-function run(layers::Vector{Layer}, ticks::Channel{Event}, signals::Channel{Event}, ios)
+function run(layers::Vector{Layer}, ticks::Channel{Event}, signals::Channel{Event}, ios; showterminal=false)
     while true
         animate!(layers)
-        serialized = serialize(render(layers, layout), layout)
+        rendered = render(layers, layout)
+        serialized = serialize(rendered, layout)
         # blocks until next tick
         @debug "waiting for tick..."
         _ = take!(ticks)
         @debug "ticked!"
+        if showterminal
+            asciivisualize(rendered)
+            println()
+        end
         for io in ios
             write(io, serialized)
         end
