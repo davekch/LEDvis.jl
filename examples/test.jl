@@ -27,7 +27,7 @@ for p in ports
     if p == "tcp"
         push!(ios, Serial.gettcp(TCP_PORT))
     elseif p == "serial"
-        push!(ios, Serial.getsserial(SERIAL_PORT_NAME, SERIAL_BAUDRATE))
+        push!(ios, Serial.getserial(SERIAL_PORT_NAME, SERIAL_BAUDRATE))
     elseif p == "local"
         global showterminal = true
     end

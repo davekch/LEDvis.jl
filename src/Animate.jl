@@ -34,7 +34,7 @@ function start!(clock::Clock)
     clock.state = RUNNING
     # how much time in seconds must pass for each frame
     t_frame = 60 / (clock.bpm * clock.resolution)
-    @info "clock is running at $(1/t_frame)Hz"
+    @info "clock is running $(clock.resolution) beats at $(clock.bpm)BPM ($(1/t_frame)Hz)"
     # start thread to send ticks
     task = Threads.@spawn begin
         @info "spawned clock ticking thread"
