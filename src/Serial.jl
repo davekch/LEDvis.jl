@@ -2,6 +2,8 @@ module Serial
 
 export serialize, deserialize
 using ..LEDLayout
+import LibSerialPort
+import Sockets
 
 """
     serialize(colormap::Matrix{Tuple{Integer}}, layout::Layout)
@@ -25,6 +27,17 @@ function deserialize(msg, layout::Layout)
         cmap[y, x] = tuple(msg[imin:imax]...)
     end
     cmap
+end
+
+
+function getserial(port::AbstractString, baudrate::Integer=115200)
+    LibSerialPort.open(port, baudrate)
+end
+
+function gettcp(port::Integer=2002)
+    server = Sockets.listen(port)
+    @info "waiting for incoming connection to tcp server on port $(port)"
+    Sockets.accept(server)
 end
 
 
