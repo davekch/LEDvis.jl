@@ -47,9 +47,17 @@ function start!(clock::Clock)
                     s = take!(clock.signals)
                     if s == PAUSE
                         clock.state = PAUSED
+                        @info "clock paused, waiting for resume"
                         # wait for resume or stop
-                        s_::Event
-                        while (s_ = take!(clock.signals)) != RESUME || s_ != STOP
+                        while (s_ = take!(clock.signals)) != RESUME && s_ != STOP
+                            @debug "clock got signal while on pause: $(s_)"
+                        end
+                        if s_ == RESUME
+                            @info "resuming clock ..."
+                            clock.state = RUNNING
+                        else
+                            @info "stopping paused clock ..."
+                            clock.state = STOPPED
                         end
                     elseif s == STOP
                         clock.state = STOPPED
@@ -92,6 +100,7 @@ end
 function stop!(clock::Clock)
     clock.state = STOPPED
     put!(clock.signals, STOP)
+    wait(clock.clockthread_)
     # remove remaining ticks
     while !isempty(clock.ticks)
         _ = take!(clock.ticks)
