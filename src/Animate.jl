@@ -151,6 +151,7 @@ function linearmove(dx, dy; factor=1, edgesx=missing, edgesy=missing)
             newanker = p0
         end
         setanker!(shape, newanker)
+        return shape
     end
     _linearmove!
 end
@@ -168,7 +169,13 @@ function growcircle(dr, minr, maxr)
 end
 
 
-rotate(dphi) = rect::Rect -> setangle!(rect, Geometry.angle(rect) + dphi)
+function rotate(dphi::Number)
+    function inner(shape::Shape)
+        setangle!(shape, Geometry.angle(shape) + dphi)
+        return shape
+    end
+    inner
+end
 
 
 """
