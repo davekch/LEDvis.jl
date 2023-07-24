@@ -1,5 +1,5 @@
 using Ledvis
-using .Geometry, .Layers, .Animate, .LEDLayout, .Visualize
+using .Geometry, .Layers, .Animate, .LEDLayout, .Visualize, .Timing
 
 
 c1 = Circle(3, [W / 2, H / 2], 0.5)

@@ -1,5 +1,5 @@
 using Ledvis
-using .Geometry, .Visualize, .Animate, .Layers, .LEDLayout
+using .Geometry, .Visualize, .Animate, .Layers, .LEDLayout, .Timing
 
 l1 = Rect(2W, 1, 1, 1)
 l2 = Rect(2W, 1, 7, 6)

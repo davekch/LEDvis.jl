@@ -1,5 +1,5 @@
 using Ledvis
-using .Geometry, .Layers
+using .Geometry, .Layers, .Timing
 
 
 rect = Rect(2W, 1, [MX, H])

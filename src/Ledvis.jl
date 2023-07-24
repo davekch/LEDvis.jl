@@ -1,16 +1,17 @@
 module Ledvis
 
-export Geometry, Layers, Animate, Visualize, LEDLayout, Serial
+export Geometry, Layers, Animate, Timing, Visualize, LEDLayout, Serial
 export W, H, MX, MY, purple, green, shadow, bkgpurple, bkgred, bkggreen, bkgblue, bkgshadow, layout, center
 
 include("Geometry.jl")
 include("LEDLayout.jl")
 include("Layers.jl")
+include("Timing.jl")
 include("Animate.jl")
 include("Visualize.jl")
 include("Serial.jl")
 
-using .Layers, .LEDLayout, .Animate, .Serial, .Visualize
+using .Layers, .LEDLayout, .Animate, .Timing, .Serial, .Visualize
 using LibSerialPort
 
 # convenience

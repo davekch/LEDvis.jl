@@ -1,5 +1,5 @@
 using Ledvis
-using .Animate, .Visualize, .Geometry, .LEDLayout, .Layers, .Serial
+using .Animate, .Visualize, .Geometry, .LEDLayout, .Layers, .Serial, .Timing
 using LibSerialPort
 
 f = Animate.periodicparameter(identity, 1, 300, 5)

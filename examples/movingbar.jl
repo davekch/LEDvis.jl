@@ -1,5 +1,5 @@
 using Ledvis
-using .Geometry, .Animate, .Layers
+using .Geometry, .Animate, .Layers, .Timing
 
 rect = Rect(W + 1, 6, [MX, -2])
 glow = Glow(rect, 60)
