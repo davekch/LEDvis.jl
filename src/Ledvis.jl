@@ -1,7 +1,7 @@
 module Ledvis
 
 export Geometry, Layers, Animate, Visualize, LEDLayout, Serial
-export W, H, MX, MY, purple, green, shadow, bkgpurple, bkggreen, bkgshadow, layout, center
+export W, H, MX, MY, purple, green, shadow, bkgpurple, bkgred, bkggreen, bkgblue, bkgshadow, layout, center
 
 include("Geometry.jl")
 include("LEDLayout.jl")
@@ -23,9 +23,13 @@ const MY = H ÷ 2 + 1
 const center = [MX, MY]
 const purple = Color(255, 0, 200)
 const green = Color(0, 255, 0)
+const red = Color(255, 0, 0)
+const blue = Color(0, 0, 255)
 const shadow = Color(-255, -255, -255)
 const bkgpurple = monochromatic(purple, W, H)
 const bkggreen = monochromatic(green, W, H)
+const bkgred = monochromatic(red, W, H)
+const bkgblue = monochromatic(blue, W, H)
 const bkgshadow = monochromatic(shadow, W, H)
 
 
