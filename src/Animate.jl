@@ -158,7 +158,7 @@ end
 
 
 function growcircle(dr, minr, maxr)
-    function _growcirle!(circle::Circle)
+    function _growcirle!(circle::Shape)
         newr = radius(circle) + dr
         if newr > maxr
             newr = minr
