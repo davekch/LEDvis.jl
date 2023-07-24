@@ -1,7 +1,7 @@
 module Layers
 
 
-export Color, Layer, render, monochromatic, shapes
+export Color, Layer, LayerGroup, render, monochromatic, shapes
 export field, colorfield, Fields
 
 using ..Geometry
@@ -175,7 +175,12 @@ width(layer::Layer) = size(layer.color, 2)
 height(layer::Layer) = size(layer.color, 1)
 shapes(layer::Layer) = layer.shapes
 
-function render(layers::Vector{Layer}, layout::Layout; full=false)
+
+struct LayerGroup
+    layers::Vector{Layer}
+end
+
+function to_colormap(layer::Layer, layout::Layout; full=false)
     # represent a layer as a simple matrix
     h, w = layout.height, layout.width # todo: check if all layers have the same dimension
     if full
@@ -186,21 +191,28 @@ function render(layers::Vector{Layer}, layout::Layout; full=false)
             cmap[j, i] = Color(0, 0, 0)
         end
     end
-    for layer in layers
-        if isempty(layer.shapes)
-            mask = ones(h, w)
-        else
-            mask::Matrix{Union{Float64,Missing}} = zeros(h, w)
-            for shape in keys(layer.shapes)
-                # add all the masks together, making sure they don't get
-                # larger than 1
-                mask .+= min.(transparency(shape) .* createmask(shape, layout, full=full), ones(h, w))
-            end
+    if isempty(layer.shapes)
+        mask = ones(h, w)
+    else
+        mask::Matrix{Union{Float64,Missing}} = zeros(h, w)
+        for shape in keys(layer.shapes)
+            # add all the masks together, making sure they don't get
+            # larger than 1
+            mask .+= min.(transparency(shape) .* createmask(shape, layout, full=full), ones(h, w))
         end
-        cmap += mask .* layer.color
     end
+    return cmap + mask .* layer.color
+end
+
+
+function to_colormap(layergroup::LayerGroup, layout::Layout; full=false)
+    cmap = sum([to_colormap(layer, layout; full=full) for layer in layergroup.layers])
+    return map(normalize, cmap)
+end
+
+function render(layers, layout::Layout; full=false)
+    cmap = sum([to_colormap(layer, layout; full=full) for layer in layers])
     return map(rgb ∘ normalize, cmap)
-    # return ifelse.(ismissing.(cmap), missing, rgb(normalize(cmap)))
 end
 
 

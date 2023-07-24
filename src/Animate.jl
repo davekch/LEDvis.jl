@@ -11,7 +11,15 @@ function animate!(layer::Layer)
     end
 end
 
-function animate!(layers::Vector{Layer})
+function animate!(layergroup::LayerGroup)
+    for layer in layergroup.layers
+        for (shape, animation) in shapes(layer)
+            animation(shape)
+        end
+    end
+end
+
+function animate!(layers)
     for layer in layers
         animate!(layer)
     end
