@@ -1,7 +1,6 @@
 module Animate
 
 export animate!, linearmove, growcircle, rotate, pulsate
-import Dates
 using ..Geometry
 using ..Layers
 
