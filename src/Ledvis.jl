@@ -34,11 +34,22 @@ const bkgshadow = monochromatic(shadow, W, H)
 
 
 function run(layers::Vector{Layer}, clock::Clock, ios; showterminal=false)
-    start!(clock)
-    while running(clock)
+    start_flag = true
+    while start_flag || running(clock)
         animate!(layers)
         rendered = render(layers, layout)
         serialized = serialize(rendered, layout)
+        if !running(clock)
+            start!(clock)
+            start_flag = false
+        end
+        # remove ticks we missed
+        if length(clock.ticks.data) > 1
+            while length(clock.ticks.data) > 0
+                @warn "can't keep up with clock, skipping beats"
+                awaittick(clock)
+            end
+        end
         # blocks until next tick
         @debug "waiting for tick..."
         awaittick(clock)
