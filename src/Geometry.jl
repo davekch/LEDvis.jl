@@ -117,10 +117,12 @@ mutable struct Glow <: Shape
     t::Number
 end
 
-anker(g::Glow) = g.inner.anker
-setanker!(g::Glow, anker) = (g.inner.anker = anker)
-angle(g::Glow) = g.inner.angle
+anker(g::Glow) = anker(g.inner)
+setanker!(g::Glow, anker) = setanker!(g.inner, anker)
+angle(g::Glow) = angle(g.inner)
 setangle!(g::Glow, a) = setangle!(g.inner, a)
+radius(g::Glow) = radius(g.inner)
+setradius!(g::Glow, r) = setradius!(g.inner, r)
 
 end # module geometry
 
