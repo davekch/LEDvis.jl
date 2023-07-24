@@ -45,7 +45,8 @@ rotate(a::Number, origin::Vector) = point -> rotate(point, a, origin)
 
 abstract type Shape end
 
-anker(s::Shape) = [0, 0]
+anker(s::Shape) = s.anker
+setanker!(s::Shape, anker) = (s.anker = anker)
 
 """
     Circle(radius, anker::Vector)
@@ -65,9 +66,7 @@ Circle(r) = Circle(r, [0, 0])
 Circle(r, x, y) = Circle(r, [x, y])
 
 radius(c::Circle) = c.radius
-anker(c::Circle) = c.anker
 setradius!(c::Circle, r) = (c.radius = r)
-setanker!(c::Circle, anker) = (c.anker = anker)
 
 """
     Rect(angle, width, height, anker::Vector)
@@ -85,8 +84,6 @@ end
 Rect(w::Number, h::Number, x::Number, y::Number) = Rect(0, w, h, [x, y])
 Rect(w::Number, h::Number, p::Vector) = Rect(0, w, h, p)
 
-anker(r::Rect) = r.anker
-setanker!(r::Rect, anker) = (r.anker = anker)
 angle(r::Rect) = r.angle
 setangle!(r::Rect, a) = (r.angle = a)
 width(r::Rect) = r.width
