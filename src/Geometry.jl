@@ -2,7 +2,7 @@ module Geometry
 
 
 export x, y, Shape, Circle, Rect, Glow, distance2
-export anker, setanker!, radius, setradius!
+export anker, setanker!, radius, setradius!, transparency, settransparency!, inner
 export width, setwidth!, height, setheight!, angle, setangle!, edges
 
 import LinearAlgebra: inv
@@ -47,42 +47,46 @@ abstract type Shape end
 
 anker(s::Shape) = s.anker
 setanker!(s::Shape, anker) = (s.anker = anker)
+transparency(s::Shape) = s.transparency
+settransparency!(s::Shape, t) = (s.transparency = t)
 
 """
-    Circle(radius, anker::Vector)
+    Circle(radius, anker::Vector, transparency=1.0)
 """
-mutable struct Circle <: Shape
+@kwdef mutable struct Circle <: Shape
     radius::Number
     anker::Vector
+    transparency::Float64 = 1.0
 end
 
 """
-    *(radius)
+    *(radius, anker::Vector)
 """
-Circle(r) = Circle(r, [0, 0])
+Circle(r, anker::Vector) = Circle(radius=r, anker=anker)
 """
     *(radius, x, y)
 """
-Circle(r, x, y) = Circle(r, [x, y])
+Circle(r::Number, x::Number, y::Number) = Circle(r, [x, y])
 
 radius(c::Circle) = c.radius
 setradius!(c::Circle, r) = (c.radius = r)
 
 """
-    Rect(angle, width, height, anker::Vector)
+    Rect(angle, width, height, anker::Vector, transparency=1.0)
 """
-mutable struct Rect <: Shape
+@kwdef mutable struct Rect <: Shape
     angle::Number
     width::Number
     height::Number
     anker::Vector
+    transparency::Float64 = 1.0
 end
 
 """
     *(width, height, x, y)
 """
-Rect(w::Number, h::Number, x::Number, y::Number) = Rect(0, w, h, [x, y])
-Rect(w::Number, h::Number, p::Vector) = Rect(0, w, h, p)
+Rect(w::Number, h::Number, x::Number, y::Number) = Rect(angle=0, width=w, height=h, anker=[x, y])
+Rect(w::Number, h::Number, p::Vector) = Rect(angle=0, width=w, height=h, anker=p)
 
 angle(r::Rect) = r.angle
 setangle!(r::Rect, a) = (r.angle = a)
@@ -109,11 +113,15 @@ function edges(rect::Rect)
 end
 
 
-mutable struct Glow <: Shape
+@kwdef mutable struct Glow <: Shape
     inner::Shape
     t::Number
+    transparency::Float64 = 1.0
 end
 
+Glow(inner::Shape, t::Number) = Glow(inner=inner, t=t)
+
+inner(g::Glow) = g.inner
 anker(g::Glow) = anker(g.inner)
 setanker!(g::Glow, anker) = setanker!(g.inner, anker)
 angle(g::Glow) = angle(g.inner)

@@ -194,7 +194,7 @@ function render(layers::Vector{Layer}, layout::Layout; full=false)
             for shape in keys(layer.shapes)
                 # add all the masks together, making sure they don't get
                 # larger than 1
-                mask .+= min.(createmask(shape, layout, full=full), ones(h, w))
+                mask .+= min.(transparency(shape) .* createmask(shape, layout, full=full), ones(h, w))
             end
         end
         cmap += mask .* layer.color
