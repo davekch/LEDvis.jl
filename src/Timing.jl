@@ -128,4 +128,26 @@ function awaittick(clock::Metronome)
 end
 
 
+struct TriggerSequence
+    timediv::Rational
+    ppq::Integer
+    sequence::Vector{Bool}
+end
+
+function maketrigger(sequence::TriggerSequence)
+    c = 0  # clock counter
+    i = 1  # index counter for the sequence
+    function _trig()
+        stepforward = isinteger(c // (4 * sequence.ppq * sequence.timediv))
+        trigger = sequence.sequence[i] && stepforward
+        c += 1
+        if stepforward
+            i = i % length(sequence.sequence) + 1
+        end
+        return trigger
+    end
+    _trig
+end
+
+
 end  # module Timing
