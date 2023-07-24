@@ -11,4 +11,4 @@ layers = [
     Layer(Dict(Glow(circle2, 1) => glow -> glow.t = g()), monochromatic(Color(0, 40, 150), W, H))
 ]
 
-clock = Clock(120, 8)
+clock = Metronome(120, 8)

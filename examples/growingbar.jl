@@ -13,5 +13,5 @@ layers = [
         end), bkgpurple)
 ]
 
-clock = Clock(70, 8)
+clock = Metronome(70, 8)
 

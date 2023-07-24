@@ -1,7 +1,7 @@
 module Animate
 
 export animate!, linearmove, growcircle, rotate, pulsate
-export Clock, start!, stop!, pause!, resume!, running, awaittick
+export Metronome, Clock, start!, stop!, pause!, resume!, running, awaittick
 import Dates
 using ..Geometry
 using ..Layers
@@ -10,31 +10,43 @@ using ..Layers
 @enum Event TICK STOP PAUSE RESUME
 @enum ClockState INITIALIZED RUNNING PAUSED STOPPED
 
+abstract type Clock end
 
-mutable struct Clock
+
+"""
+    Metronome(bpm::Integer, ppq::Integer)
+
+returns a Metronome that runs at `bpm` BPM with `ppq` pulses per quarter
+"""
+mutable struct Metronome <: Clock
     bpm::Integer
-    resolution::Integer
+    ppq::Integer  # pulses per quarter
     clockthread_::Union{UndefInitializer,Task}
     ticks::Channel{Event}   # channel to send ticks
     signals::Channel{Event}   # channel to receive stop, start, ...
     state::ClockState
 
-    function Clock(bpm::Integer, resolution::Integer)
+    function Metronome(bpm::Integer, resolution::Integer)
         ticks = Channel{Event}(Inf)
         signals = Channel{Event}(1)
         new(bpm, resolution, undef, ticks, signals, INITIALIZED)
     end
 end
 
-function start!(clock::Clock)
+"""
+    start!(clock::Metronome)
+
+starts a metronome in a separate thread. tick events may be read with `awaittick(clock)`
+"""
+function start!(clock::Metronome)
     if clock.state == RUNNING || clock.state == PAUSED
         @warn "clock was already started (now in state $(clock.state)). use resume! to resume a paused clock"
         return
     end
     clock.state = RUNNING
     # how much time in seconds must pass for each frame
-    t_frame = 60 / (clock.bpm * clock.resolution)
-    @info "clock is running $(clock.resolution) beats at $(clock.bpm)BPM ($(1/t_frame)Hz)"
+    t_frame = 60 / (clock.bpm * clock.ppq)
+    @info "clock is running $(clock.ppq) beats at $(clock.bpm)BPM ($(1/t_frame)Hz)"
     # start thread to send ticks
     task = Threads.@spawn begin
         @info "spawned clock ticking thread"
@@ -77,7 +89,7 @@ function start!(clock::Clock)
     clock.clockthread_ = task
 end
 
-function pause!(clock::Clock)
+function pause!(clock::Metronome)
     if clock.state == RUNNING
         put!(clock.signals, PAUSE)
         # remove remaining ticks
@@ -89,7 +101,7 @@ function pause!(clock::Clock)
     end
 end
 
-function resume!(clock::Clock)
+function resume!(clock::Metronome)
     if clock.state != PAUSED
         @warn "clock is currently not paused ($(clock.state))"
     else
@@ -97,7 +109,7 @@ function resume!(clock::Clock)
     end
 end
 
-function stop!(clock::Clock)
+function stop!(clock::Metronome)
     clock.state = STOPPED
     put!(clock.signals, STOP)
     wait(clock.clockthread_)
@@ -107,11 +119,16 @@ function stop!(clock::Clock)
     end
 end
 
-function running(clock::Clock)
+function running(clock::Metronome)
     clock.state == RUNNING || clock.state == PAUSED
 end
 
-function awaittick(clock::Clock)
+"""
+    awaittick(clock::Metronome)
+
+wait until a tick event occurs in `clock`
+"""
+function awaittick(clock::Metronome)
     take!(clock.ticks)
 end
 

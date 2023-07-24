@@ -9,4 +9,4 @@ layers = [
     Layer(Dict(glow => grow), bkgpurple)
 ]
 
-clock = Clock(120, 8)
+clock = Metronome(120, 8)

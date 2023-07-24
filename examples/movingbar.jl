@@ -8,5 +8,5 @@ layers = [
     Layer(Dict(glow => linearmove(0, 1; edgesy=(-10, H + 1))), background)
 ]
 
-clock = Clock(60, 8)
+clock = Metronome(60, 8)
 

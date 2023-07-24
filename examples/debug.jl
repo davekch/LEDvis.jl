@@ -10,4 +10,4 @@ layers = [
     Layer([rect3], bkgblue)
 ]
 
-clock = Clock(20, 1)
+clock = Metronome(20, 1)
