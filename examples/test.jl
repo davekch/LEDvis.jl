@@ -11,7 +11,7 @@ options for connections are tcp, serial, local. options for animations are
 all filenames in this folder (without .jl)
 """
 
-const SERIAL_PORT_NAME = "/dev/ttyACM0"
+const SERIAL_PORT_NAME = "/dev/ttyUSB0"
 const SERIAL_BAUDRATE = 115200
 const TCP_PORT = 2002
 
@@ -33,4 +33,5 @@ for p in ports
     end
 end
 
-Ledvis.run(layers, clock, ios; showterminal=showterminal)
+sleep(2)
+t = Threads.@spawn Ledvis.run(layers, clock, ios; showterminal=showterminal)
