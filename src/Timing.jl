@@ -1,6 +1,7 @@
 module Timing
 
 export Metronome, Clock, start!, stop!, pause!, resume!, running, awaittick
+export TriggerSequence, maketrigger
 
 @enum Event TICK STOP PAUSE RESUME
 @enum ClockState INITIALIZED RUNNING PAUSED STOPPED
