@@ -129,7 +129,7 @@ function awaittick(clock::Metronome)
 end
 
 
-struct TriggerSequence
+mutable struct TriggerSequence
     timediv::Rational
     ppq::Integer
     sequence::Vector{Bool}
@@ -150,5 +150,6 @@ function maketrigger(sequence::TriggerSequence)
     _trig
 end
 
+include("MidiClock.jl")
 
 end  # module Timing
