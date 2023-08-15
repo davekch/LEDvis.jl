@@ -34,7 +34,7 @@ const bkgblue = monochromatic(blue, W, H)
 const bkgshadow = monochromatic(shadow, W, H)
 
 
-function run(layers, clock::Metronome, ios; showterminal=false)
+function run(layers, clock::Clock, ios; showterminal=false)
     start_flag = true
     while start_flag || running(clock)
         animate!(layers)
@@ -65,7 +65,7 @@ function run(layers, clock::Metronome, ios; showterminal=false)
     end
 end
 
-function run(layers::Vector{Layer}, clock::Metronome)
+function run(layers::Vector{Layer}, clock::Clock)
     run(layers, clock, []; showterminal=true)
 end
 
