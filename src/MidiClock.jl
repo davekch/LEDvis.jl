@@ -34,7 +34,7 @@ function start!(clock::MidiClock)
         @info "started clock thread"
         while clock.state == RUNNING
             msg = midiin.getMessage()
-            if !isnothing(msg)
+            if !isnothing(msg) && msg.getRawData() == "\xf8"
                 # @info "msg is not nothing, am at step$(i)"
                 if clock._i % clock.ppq_div == 0
                     put!(clock.ticks, TICK)
