@@ -31,6 +31,10 @@ function Base.:*(f::Number, c::Color)
     Color(f * c.r, f * c.g, f * c.b)
 end
 
+function Base.:*(c::Color, f::Number)
+    f * c
+end
+
 Base.:*(::Missing, ::Color) = missing
 
 function normalize(color::Color)
