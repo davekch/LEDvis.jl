@@ -1,5 +1,5 @@
 using Ledvis
-using .Animate, .Visualize, .Geometry, .LEDLayout, .Layers, .Serial
+using .Animate, .Visualize, .Geometry, .LEDLayout, .Layers, .Serial, .Timing
 
 """
 test script to run various animations in either the terminal, another terminal
